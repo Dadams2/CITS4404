@@ -22,7 +22,7 @@ def costfn(clew: list[Camo_Worm]):
 
     # Internal Knowledge
     # Add cost function here...
-
+    internal_score = costfn_internal(clew, 200, 1)
 
     # Group Knowledge (i.e. Distance)
     # Add cost function here...
@@ -52,3 +52,45 @@ def costfn(clew: list[Camo_Worm]):
         # Environment Knowledge
         # Add cost function here...
 
+
+# Basic internal drivers for cost function
+#   Worm prefers to grow larger
+#   Worm prefers to be straighter
+def costfn_internal(clew: list, w_size: float, w_curve: float):
+    """
+    Evaluates internal drivers aspect of the cost function.
+
+    Parameters
+    ---
+    clew : list
+        A list of `Camo_Worm` objects.
+    
+    w_size: float
+        The weighting to apply to worm size
+    
+    w_curve: float
+        The weighting to apply to worm curvature
+    
+    Returns
+    ---
+    float
+        The evaluation of the `clew` of `Camo_Worms` for internal drivers.
+    """
+    total_score = 0
+
+    
+    # Since this is operating on internal features we will consider
+    # each worm individually
+    for worm in clew:
+        # larger worm = higher score
+        # using length of the centre line for this so that curvature
+        # isn't considered in the size of the worm
+        # Inverse so larger worm is smaller penalty
+        # [TODO] Figure out some sort of way to weight this as equal to curvature
+        size_score = (1 / (2 * worm.r * worm.width))
+        # straighter worm = higher score
+        c_penalty = worm.dr
+
+        total_score += size_score * w_size + c_penalty * w_curve
+    
+    return total_score
