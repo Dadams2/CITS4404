@@ -1,17 +1,6 @@
 from Camo_Worm import Camo_Worm
 
 
-def print_worm_deets(worm: Camo_Worm):
-    print("Worm's 8 Parameters:")
-    print(f"Centre Point (x, y): ({worm.x}, {worm.y})")
-    print("Radius (r)          : ", worm.r)
-    print("Angle (theta)       : ", worm.theta)
-    print("Radius (d)          : ", worm.dr)
-    print("Angle (gamma)       : ", worm.dgamma)
-    print("Width               : ", worm.width)
-    print("Colour              : ", worm.colour)
-
-
 def costfn(clew: list[Camo_Worm]):
     """
     The overall cost function, which is split into Internal, Group and Environmental types of the information.
@@ -30,16 +19,21 @@ def costfn(clew: list[Camo_Worm]):
         Cost Function could be in single function, to avoid repetition of loops.
     """
 
-    for worm in clew:
-        print_worm_deets(worm)
+    for i, worm in enumerate(clew):
+        if i < 5: 
+            worm.print_deets()
+            print("Clew Size: ", len(clew))
+
+
 
 
         # Internal Knowledge
         # Add cost function here...
 
 
-        # Group Knowledge
+        # Group Knowledge (i.e. Distance)
         # Add cost function here...
+        # for ii in range(i, len(clew)):
 
 
         # Environment Knowledge
