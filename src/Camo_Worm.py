@@ -47,6 +47,9 @@ class Camo_Worm:
         colours = [image[point[0],point[1]] for point in intermediates]
         return(np.array(colours)/255)
 
+    def centre_point(self):
+        return (self.x, self.y)
+        
     def print_deets(self):
         print("Worm's 8 Parameters:")
         print(f"Centre Point (x, y): ({self.x}, {self.y})")

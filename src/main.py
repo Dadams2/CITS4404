@@ -3,6 +3,7 @@ import numpy as np
 from Camo_Worm import Camo_Worm, initialise_random_clew
 from Drawing import Drawing
 from image import prep_image
+from cost_function import costfn
 
 
 image = prep_image()
@@ -23,3 +24,4 @@ worm2 = Camo_Worm(350, 100, 300, 0, 70, -np.pi/2, 5, 0.8)
 drawing2 = Drawing(image)
 drawing2.add_worm_with_details(worm2)
 
+# costfn(clew)

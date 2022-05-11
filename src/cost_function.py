@@ -1,3 +1,4 @@
+import numpy as np
 from Camo_Worm import Camo_Worm
 
 
@@ -19,28 +20,35 @@ def costfn(clew: list[Camo_Worm]):
         Cost Function could be in single function, to avoid repetition of loops.
     """
 
-    for i, worm in enumerate(clew):
-        if i < 5: 
-            worm.print_deets()
-            print("Clew Size: ", len(clew))
+    # Internal Knowledge
+    # Add cost function here...
 
 
+    # Group Knowledge (i.e. Distance)
+    # Add cost function here...
 
 
-        # Internal Knowledge
-        # Add cost function here...
+    distance_score: list[float] = [0.0] * len(clew)
 
+    # Calculate the Euclidean distance using NumPy for each point
+    # Adding the inverse of the distance to the sum
+    # Complexity: (n^2)/2
+    for i in range(0, len(clew)):
+        for ii in range(i+1, len(clew)):
+            if i is not ii:
 
-        # Group Knowledge (i.e. Distance)
-        # Add cost function here...
-        # for ii in range(i, len(clew)):
+                # Centre Point of the two worms
+                point1 = np.array(clew[i].centre_point())
+                point2 = np.array(clew[ii].centre_point())
+
+                # Euclidean distance using NumPy
+                eu_distance = np.linalg.norm(point1 - point2)
+
+                # Adding to the sum for the two worms
+                distance_score[i] += 1 / eu_distance
+                distance_score[ii] += 1 / eu_distance
 
 
         # Environment Knowledge
         # Add cost function here...
-
-
-
-        
-
 
