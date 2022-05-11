@@ -38,7 +38,7 @@ class Camo_Worm:
         return self.bezier.point_at_t(np.linspace(0,1,intervals))
 
     def approx_length (self):
-        intermediates = intermediate_points(self)
+        intermediates = self.intermediate_points()
         eds = euclidean_distances(intermediates,intermediates)
         return np.sum(np.diag(eds,1))
 
