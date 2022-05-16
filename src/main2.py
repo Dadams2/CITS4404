@@ -15,11 +15,11 @@ img_shape = image.shape
 def draw_worms(this_clew, i):
     drawing = Drawing(image)
     drawing.add_worms(this_clew)
-    drawing.show(save=f'src/img_results/output_{i}.png')
+    drawing.show(save=None)# f'src/img_results/output_{i}.png')
 
 
 
-def new_child_clew (best_clew: list[Camo_Worm]):
+def new_child_clew(best_clew: list[Camo_Worm], init_params):
 
     # CONSTANTS
     internal_PARAMS = ['x', 'y', 'colour']
@@ -43,8 +43,8 @@ def new_child_clew (best_clew: list[Camo_Worm]):
         child1_params = {}
         child2_params = {}
 
-        # parent_pair = random.sample(best_clew, k=2)  # Completely Random Parents
-        parent_pair = [best_clew[index], best_clew[index+1]]  # Iterating through all worms in best_clew
+        parent_pair = random.sample(best_clew, k=2)  # Completely Random Parents
+        # parent_pair = [best_clew[index], best_clew[index+1]]  # Iterating through all worms in best_clew
 
 
         selection = int(random.random())
@@ -64,11 +64,11 @@ def new_child_clew (best_clew: list[Camo_Worm]):
         
         if random.random() < 1/8:
             param = random.choice(all_PARAMS)
-            child1_params[param] = child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+            child1_params[param] = mutation(param, img_shape, init_params) # child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
 
         if random.random() < 1/8:
             param = random.choice(all_PARAMS)
-            child2_params[param] = child2_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+            child2_params[param] = mutation(param, img_shape, init_params) # child2_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
     
 
         ###############################################
@@ -105,19 +105,19 @@ def evolutionary_algorithm(iterations: int):
 
     selection_VALUE = 0.40          # Constant - 40% of the best worms in a clew
     clew_SIZE = 100                 # Constant - Size of Clew
-
-    this_clew = initialise_random_clew(clew_SIZE, image.shape, (40, 30, 1))
-    
+    init_params = (40, 30, 1)
+    this_clew = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
+    draw_worms(this_clew, "initial")
 
 
     for i in range(iterations):
 
-        draw_worms(this_clew, i)
+        
 
         ###############################################
         # Evaluation and Cost Functions
 
-        costs = [costfn(this_clew, i, img_shape, image, w_env=10) for i, _worm in enumerate(this_clew)]
+        costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
 
 
         ###############################################
@@ -125,7 +125,7 @@ def evolutionary_algorithm(iterations: int):
 
         zipped_clew = zip(this_clew, costs)
         sorted_clew = sorted(zipped_clew, key=lambda zipped: zipped[1])
-        print(len(sorted_clew))
+        # print(len(sorted_clew))
 
         best_clew = [worm for worm, _cost in sorted_clew[:int(len(this_clew) * selection_VALUE)]]
 
@@ -133,7 +133,8 @@ def evolutionary_algorithm(iterations: int):
         ###############################################
         # Crossover + Mutation
 
-        child_clew = new_child_clew(best_clew)
+        child_clew = new_child_clew(best_clew, init_params)
+        sorted_clew = sorted_clew[len(best_clew):]
         for i, child in enumerate(child_clew):
             sorted_clew.append((child, costfn(child_clew, i, img_shape, image)))
         sorted_clew = sorted(sorted_clew, key=lambda x: x[1])
@@ -141,9 +142,38 @@ def evolutionary_algorithm(iterations: int):
         # print(len(sorted_clew))
 
         this_clew = [worm for worm, _cost in sorted_clew[:clew_SIZE]]
-        
 
-evolutionary_algorithm(iterations=100)
+    print(sorted_clew)
+    
+    draw_worms(this_clew, "final")
+
+
+# Randomly mutates a parameter based on the limits of that parameter
+def mutation(param, imshape, init_params) -> float:
+    # 'x', 'y', 'colour', 'r', 'theta', 'width', 'dr', 'dgamma'
+    rng = np.random.default_rng() 
+    (radius_std, deviation_std, width_theta) = init_params
+    if param == 'x':
+        return rng.random() * imshape[1]
+    elif param == 'y':
+        return rng.random() * imshape[0]
+    elif param == 'colour':
+        return rng.random()
+    elif param == 'r':
+        return radius_std * np.abs(rng.standard_normal())
+    elif param == 'theta':
+        return rng.random() * np.pi
+    elif param == 'width':
+        return width_theta * rng.standard_gamma(3)
+    elif param == 'dr':
+        return deviation_std * np.abs(rng.standard_normal())
+    else:
+        # dgamma
+        return rng.random() * np.pi
+
+
+
+evolutionary_algorithm(iterations=1000)
 
 
 
