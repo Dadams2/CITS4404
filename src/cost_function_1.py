@@ -5,17 +5,29 @@ from Camo_Worm import Camo_Worm
 def costfn(clew: list[Camo_Worm]):
     """
     The overall cost function, which is split into Internal, Group and Environmental types of the information.
-
+    Parameters
+    ---
+        clew: list
+            A clew of worms
+        worm_idx: int
+            The index of the worm within the clew
+        w_internal: float
+            Weight for internal
+        w_dist: float
+            Weight for distance
+    
+    Returns
+    ---
+    float
+        The score of the worm
     Overall Formula:
         Cost Function = SUM(iW.iC + gW.gC + eW.eC)
-
             iW - Weight/Tuning parameter for Internal Knowledge
             gW - Weight/Tuning parameter for Group Knowledge
             eW - Weight/Tuning parameter for Environment Knowledge
             iC - Cost Function for Internal Knowledge
             gC - Cost Function for Group Knowledge
             eC - Cost Function for Environment Knowledge
-
     Performance:
         Cost Function could be in single function, to avoid repetition of loops.
     """

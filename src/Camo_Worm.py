@@ -88,7 +88,9 @@ def random_worm (imshape, init_params):
 def initialise_random_clew (size, imshape, init_params):
     """ Initialise a random clew """
     
-    clew = [Camo_Worm]
+    clew: list[Camo_Worm] = []
+
     for i in range(size):
         clew.append(random_worm(imshape, init_params))
+    
     return clew
