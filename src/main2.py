@@ -34,7 +34,7 @@ def mutation(param, imshape, init_params) -> float:
     elif param == 'y':
         return rng.random() * imshape[0]
     elif param == 'colour':
-        return rng.random() * 255
+        return rng.random()
     elif param == 'r':
         return radius_std * np.abs(rng.standard_normal())
     elif param == 'theta':
