@@ -1,12 +1,10 @@
 import numpy as np
 import random
+from tqdm import tqdm
 
 from Camo_Worm import *
-from Drawing import Drawing
-from image import prep_image
-from tqdm import tqdm
-# from cost_function_1 import costfn
-from cost_function_2 import costfn
+from Drawing import Drawing, prep_image
+from cost_function import costfn
 
 
 image = prep_image()

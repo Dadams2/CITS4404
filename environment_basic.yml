@@ -1,9 +1,0 @@
-name: cits4404
-channels:
-  - defaults
-dependencies:
-  - numpy
-  - imageio
-  - matplotlib
-  - scikit-learn
-  - ipykernel

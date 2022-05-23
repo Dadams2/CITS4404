@@ -9,3 +9,7 @@ Camouﬂage Worms
 Use the following command lines to create a new Conda Environments using the specified dependencies:
 - `conda env create --file environment.yml`
 - `conda env create -f environment.yml`
+
+### Update Conda Environment
+
+- `conda env update -f environment.yml`

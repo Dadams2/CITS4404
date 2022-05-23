@@ -2,19 +2,12 @@ import numpy as np
 import random
 
 from Camo_Worm import *
-from Drawing import Drawing
-from image import prep_image
+from Drawing import Drawing, prep_image
 from test_cost_function import internal_cost_score
 
 
 image = prep_image()
 img_shape = image.shape
-
-
-def draw_worms(this_clew, i):
-    drawing = Drawing(image)
-    drawing.add_worms(this_clew)
-    drawing.show(save=f'src/img_results/output_{i}.png')
 
 
 ########################################
