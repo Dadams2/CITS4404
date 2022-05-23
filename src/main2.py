@@ -90,10 +90,12 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
         # Mutation - (Hadi): just trying to get more mutations happening
 
         for param in all_PARAMS:
-            if random.random() < 1/8:
-                child1_params[param] = mutation(param, img_shape, init_params) # child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+            if random.random() < 0.01:
+                # child1_params[param] *= ((random.random() * 0.6) + 0.7)  # mutate between 90 - 110% of good worms attr value 
+               child1_params[param] = mutation(param, img_shape, init_params) # child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
 
-            if random.random() < 1/8:
+            if random.random() < 0.01:
+                # child2_params[param] *= ((random.random() * 0.6) + 0.7)  # mutate between 90 - 110% of good worms attr value 
                 child2_params[param] = mutation(param, img_shape, init_params) # child2_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
 
 
@@ -130,8 +132,9 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
 
 def evolutionary_algorithm(iterations: int):
 
-    selection_VALUE = 0.40          # Constant - 40% of the best worms in a clew
+    selection_VALUE = 0.30          # Constant - will select selection_VALUE - elite of the best worms in a clew
     clew_SIZE = 100                 # Constant - Size of Clew
+    elite = 0.1                     # keep top 10% of each generation w/o modification (elitism concept)
     init_params = (40, 30, 1)
 
     this_clew = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
@@ -146,6 +149,7 @@ def evolutionary_algorithm(iterations: int):
         # Evaluation and Cost Functions
 
         costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+        print(sum(costs))
 
 
         ###############################################
@@ -154,14 +158,16 @@ def evolutionary_algorithm(iterations: int):
         zipped_clew = zip(this_clew, costs)
         sorted_clew = sorted(zipped_clew, key=lambda zipped: zipped[1])
 
-        best_clew = [worm for worm, _cost in sorted_clew[:int(len(this_clew) * selection_VALUE)]]
+        elite_number = int(len(this_clew) * elite)
+        best_clew = [worm for worm, _cost in sorted_clew[elite_number:int(len(this_clew) * selection_VALUE)]]
+        # remove parents from the clew
 
 
         ###############################################
         # Crossover + Mutation
 
         child_clew = new_child_clew(best_clew, init_params)
-        sorted_clew = sorted_clew[len(best_clew):]
+
         for index, child in enumerate(child_clew):
             sorted_clew.append((child, costfn(child_clew, index, img_shape, image)))
         sorted_clew = sorted(sorted_clew, key=lambda x: x[1])
@@ -174,6 +180,8 @@ def evolutionary_algorithm(iterations: int):
 
         # draw_worms(this_clew, title=i, show="no", save="yes")
 
+    costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+    print(sum(costs))
     draw_worms(this_clew, title="final")
 
 
