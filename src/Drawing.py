@@ -29,11 +29,15 @@ class Drawing:
             self.add_patches([w.patch() for w in worms])
         except TypeError:
             self.add_patches([worms.patch()])
-
-    def show(self, save=None):
-        if save is not None:
-            plt.savefig(save)
+    
+    def show(self):
         plt.show()
+
+    def add_title(self, title):
+        plt.title(title)
+    
+    def save(self, path_to_save):
+        plt.savefig(path_to_save)
 
 
     def add_worm_with_details(self, worm: Camo_Worm, save_path: str = None):
@@ -49,5 +53,6 @@ class Drawing:
         if save_path is None:
             self.show()
         else:
-            self.show(save='bezier.png')
+            self.save(path_to_save=f"{save_path}/bezier.png")
+            self.show()
 

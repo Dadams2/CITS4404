@@ -12,11 +12,39 @@ image = prep_image()
 img_shape = image.shape
 
 
-def draw_worms(this_clew, i):
+def draw_worms(this_clew, title, show="yes", save="no"):
     drawing = Drawing(image)
+    drawing.add_title(f'Iteration {title}')
     drawing.add_worms(this_clew)
-    drawing.show(save=None)# f'src/img_results/output_{i}.png')
+    if save == "yes": drawing.save(f'src/img_results/output_{title}.png')
+    if show == "yes": drawing.show()
 
+
+
+def mutation(param, imshape, init_params) -> float:
+    """
+        Randomly mutates a parameter based on the limits of that parameter
+        Parameters:
+            param (string): will be one of the following values --> 'x', 'y', 'colour', 'r', 'theta', 'width', 'dr', 'dgamma'
+    """
+    rng = np.random.default_rng() 
+    (radius_std, deviation_std, width_theta) = init_params
+    if param == 'x':
+        return rng.random() * imshape[1]
+    elif param == 'y':
+        return rng.random() * imshape[0]
+    elif param == 'colour':
+        return rng.random() * 255
+    elif param == 'r':
+        return radius_std * np.abs(rng.standard_normal())
+    elif param == 'theta':
+        return rng.random() * np.pi
+    elif param == 'width':
+        return width_theta * rng.standard_gamma(3)
+    elif param == 'dr':
+        return deviation_std * np.abs(rng.standard_normal())
+    elif param == "dgamma":
+        return rng.random() * np.pi
 
 
 def new_child_clew(best_clew: list[Camo_Worm], init_params):
@@ -32,9 +60,8 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
     new_children = []
 
     for index in range(0, clew_size, 2):
-
-        if (index+1) >= clew_size:
-            # To take care of the out of bound problem in case of an odd number 
+        
+        if (index+1) >= clew_size:  # To take care of the out of bound problem in case of an odd number 
             break
 
         ###############################################
@@ -60,16 +87,16 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
 
 
         ###############################################
-        # Mutation
-        
-        if random.random() < 1/8:
-            param = random.choice(all_PARAMS)
-            child1_params[param] = mutation(param, img_shape, init_params) # child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+        # Mutation - (Hadi): just trying to get more mutations happening
 
-        if random.random() < 1/8:
-            param = random.choice(all_PARAMS)
-            child2_params[param] = mutation(param, img_shape, init_params) # child2_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
-    
+        for param in all_PARAMS:
+            if random.random() < 1/8:
+                child1_params[param] = mutation(param, img_shape, init_params) # child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+
+            if random.random() < 1/8:
+                child2_params[param] = mutation(param, img_shape, init_params) # child2_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+
+
 
         ###############################################
         # Making Children
@@ -106,8 +133,9 @@ def evolutionary_algorithm(iterations: int):
     selection_VALUE = 0.40          # Constant - 40% of the best worms in a clew
     clew_SIZE = 100                 # Constant - Size of Clew
     init_params = (40, 30, 1)
+
     this_clew = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
-    draw_worms(this_clew, "initial")
+    draw_worms(this_clew, title="initial")
 
 
     for i in range(iterations):
@@ -125,7 +153,6 @@ def evolutionary_algorithm(iterations: int):
 
         zipped_clew = zip(this_clew, costs)
         sorted_clew = sorted(zipped_clew, key=lambda zipped: zipped[1])
-        # print(len(sorted_clew))
 
         best_clew = [worm for worm, _cost in sorted_clew[:int(len(this_clew) * selection_VALUE)]]
 
@@ -135,96 +162,19 @@ def evolutionary_algorithm(iterations: int):
 
         child_clew = new_child_clew(best_clew, init_params)
         sorted_clew = sorted_clew[len(best_clew):]
-        for i, child in enumerate(child_clew):
-            sorted_clew.append((child, costfn(child_clew, i, img_shape, image)))
+        for index, child in enumerate(child_clew):
+            sorted_clew.append((child, costfn(child_clew, index, img_shape, image)))
         sorted_clew = sorted(sorted_clew, key=lambda x: x[1])
-
-        # print(len(sorted_clew))
 
         this_clew = [worm for worm, _cost in sorted_clew[:clew_SIZE]]
 
-    print(sorted_clew)
-    
-    draw_worms(this_clew, "final")
 
+        ###############################################
+        # Printing/showing/saving images for all iteration
 
-# Randomly mutates a parameter based on the limits of that parameter
-def mutation(param, imshape, init_params) -> float:
-    # 'x', 'y', 'colour', 'r', 'theta', 'width', 'dr', 'dgamma'
-    rng = np.random.default_rng() 
-    (radius_std, deviation_std, width_theta) = init_params
-    if param == 'x':
-        return rng.random() * imshape[1]
-    elif param == 'y':
-        return rng.random() * imshape[0]
-    elif param == 'colour':
-        return rng.random()
-    elif param == 'r':
-        return radius_std * np.abs(rng.standard_normal())
-    elif param == 'theta':
-        return rng.random() * np.pi
-    elif param == 'width':
-        return width_theta * rng.standard_gamma(3)
-    elif param == 'dr':
-        return deviation_std * np.abs(rng.standard_normal())
-    else:
-        # dgamma
-        return rng.random() * np.pi
+        # draw_worms(this_clew, title=i, show="no", save="yes")
 
+    draw_worms(this_clew, title="final")
 
 
 evolutionary_algorithm(iterations=1000)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # Random Clew
-# clew = initialise_random_clew(100, image.shape, (40, 30, 1))
-# drawing = Drawing(image)
-# drawing.add_worms(clew)
-# drawing.show()
-
-# # Worm Example
-# worm1 = Camo_Worm(200, 100, 50, np.pi/6, 70, np.pi/3, 10, 0.8)
-# drawing1 = Drawing(image)
-# drawing1.add_worm_with_details(worm1)
-
-# # Another Worm Example
-# worm2 = Camo_Worm(350, 100, 300, 0, 70, -np.pi/2, 5, 0.8)
-# drawing2 = Drawing(image)
-# drawing2.add_worm_with_details(worm2)
-
-# costfn(clew)
