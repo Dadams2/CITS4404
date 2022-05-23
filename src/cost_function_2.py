@@ -5,7 +5,7 @@ from Camo_Worm import Camo_Worm
 def costfn(
     clew: list[Camo_Worm], worm_idx: int, 
     imshape: tuple, image, 
-    w_internal: float=1.0, w_dist: float=1.0, w_env=2.0):
+    w_internal: float=0.3, w_dist: float=1.0, w_env=2.0):
 
 
     worm = clew[worm_idx]
@@ -22,7 +22,7 @@ def costfn(
     theta_score = worm.theta / (np.pi / 2)
 
 
-    internal_score = (size_score + c_penalty + theta_score) / 3
+    internal_score = (0.3 * size_score + c_penalty + theta_score) / 3
 
     # --------------------
     # Group Score
@@ -41,7 +41,8 @@ def costfn(
     # Environment Score
 
     # Check intensity of pixels at control points of the worm
-    exam_pts = worm.intermediate_points(3)
+    worm_length = 2*worm.r
+    exam_pts = worm.intermediate_points(int(worm_length/5))
     worm_intensity = worm.colour * 255
     intensity_scores = []
     for pt in exam_pts:
@@ -50,7 +51,7 @@ def costfn(
         # clamp values
         x = int(max(0, min(imshape[1]-1, pt[0])))
         y = int(max(0, min(imshape[0]-1, pt[1])))
-        # get a window of intensity in region to work out median intensity
+        # get a window of intensity in region to work out mean intensity
         x0 = max(x - 1, 0)
         x1 = min(x + 1, imshape[1]-1)
         y0 = max(y - 1, 0)
@@ -62,7 +63,7 @@ def costfn(
     mean_intensity = np.mean(intensity_scores)
     # print(median_intensity)
     # print(worm_intensity)
-    intensity_score = abs((mean_intensity - worm_intensity) / 255)
+    intensity_score = 2 * abs((mean_intensity - worm_intensity) / 255)
 
     environment_score = intensity_score
     # print(environment_score)
