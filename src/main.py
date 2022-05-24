@@ -12,13 +12,16 @@ image = prep_image()
 img_shape = image.shape
 
 
-def draw_worms(this_clew, title, show="yes", save="no"):
+def draw_worms(this_clew, title, clew_size=None, iterations=None, show="yes", save="no"):
     drawing = Drawing(image)
-    drawing.add_title(f'Iteration {title}')
+    if clew_size is None or iterations is None:
+        drawing.add_title(f"{title}")
+    else:
+        drawing.add_title(f"{title} - Clew Size: {clew_size} - Iterations: {iterations}")
     drawing.add_worms(this_clew)
     if save == "yes": 
         date_string = datetime.now().strftime("%m%d%Y-%H%M") # current date and time
-        drawing.save(f'src/img_results/output_{title}_{date_string}.png')
+        drawing.save(f'src/img_results/output_{date_string}_{title}_.png')
     if show == "yes": drawing.show()
 
 
@@ -146,7 +149,7 @@ def evolutionary_algorithm(iterations: int):
     init_params = (40, 30, 1)
 
     this_clew : list[Camo_Worm] = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
-    draw_worms(this_clew, title="initial")
+    draw_worms(this_clew, title="Random Initialisation")
 
 
     # for i in tqdm(range(iterations)):
@@ -191,9 +194,10 @@ def evolutionary_algorithm(iterations: int):
 
     costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
     print(sum(costs))
-    draw_worms(this_clew, title=f"final-{iterations}iter-{clew_SIZE}clew-", save="yes")
+    draw_worms(this_clew, title="Final", clew_size=clew_SIZE, iterations=iterations, save="yes")
 
     for i, worm in enumerate(this_clew):
         print(i, ":::", worm.centre_point())
+
 
 evolutionary_algorithm(iterations=200)
