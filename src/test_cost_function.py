@@ -6,17 +6,17 @@ from Camo_Worm import Camo_Worm
 def internal_cost_score(clew_size: int, worm: Camo_Worm, img_shape):
     # --------------------
     # Internal Score
-    # Penalty for curvature. Curvature <= 1/3rd image dimension is between 0 - 1,
-    # curvature score is always < 3
-    c_penalty = worm.dr / (max(img_shape) / 3)
-    desired_size = img_shape[0] * img_shape[1] / clew_size
-    size_score = abs((desired_size - (2 * worm.r * worm.width))/desired_size)
-    # gamma should be close to 90 degrees
-    # gamma_score = abs(((np.pi/4) - worm.dgamma) / (np.pi / 4))
-    # theta should be close to 0 (horizontal lines)
-    theta_score = worm.theta / (np.pi / 2)
+    # essentially, we divided by the maximum possible value allowed
+    # i.e. length cannot be greater than the image size
+    # i.e. theta cannot be greater than 90 degrees
+    # i.e. dr which is the radius of deviation cannot be greater than the length of the worm itself
+    # and we double that because we really don't like it (not sure if that's a good idea)
+    length = 2 * worm.r
+    length_score = length / max(img_shape)
 
-    internal_score = (size_score + c_penalty + theta_score) / 3
+    theta_score = worm.theta / (np.pi/2)
+    dr_score = 2 * abs(worm.dr / (length))
+    internal_score = (length_score + theta_score + dr_score)/3
 
     return internal_score
 
