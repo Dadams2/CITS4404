@@ -60,8 +60,8 @@ def mutation(param, imshape, init_params) -> float:
 def new_child_clew(best_clew: list[Camo_Worm], init_params):
 
     # CONSTANTS
-    internal_PARAMS = ['x', 'y', 'colour']
-    other_PARAMS = ['r', 'theta', 'width', 'dr', 'dgamma']
+    internal_PARAMS = ['x', 'y']
+    other_PARAMS = ['r', 'theta', 'width', 'dr', 'dgamma', 'colour']
     all_PARAMS = ['x', 'y', 'colour', 'r', 'theta', 'width', 'dr', 'dgamma']
     
     index = 0;
@@ -86,9 +86,14 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
 
         selection = int(random.random())
         for param in internal_PARAMS:
-            child1_params[param] = parent_pair[selection].__getattribute__(param) * (random.random() * 1) + 0.5
-            child2_params[param] = parent_pair[1-selection].__getattribute__(param) * (random.random() * 1) + 0.5
-
+            param1 = parent_pair[selection].__getattribute__(param)
+            param2 = parent_pair[1-selection].__getattribute__(param)
+            child1_params[param] = param1 * (random.random() * 1) + 0.6
+            child2_params[param] = param2 * (random.random() * 1) + 0.6
+            if param == 'x' or param == 'y':
+                if random.random() < 0.01:
+                    child1_params[param] *= mutation(param, img_shape, init_params)
+                    child2_params[param] *= mutation(param, img_shape, init_params)
         
         for param in other_PARAMS:
             selection = int(random.random())
@@ -205,4 +210,4 @@ def evolutionary_algorithm(iterations: int, clew_size: int):
 
     print(f"IMage difference {image_difference(smoothed_image, final_image)}")
 
-evolutionary_algorithm(iterations=20, clew_size=20)
+evolutionary_algorithm(iterations=100, clew_size=50)
