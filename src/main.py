@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from datetime import datetime
 from tqdm import tqdm
 
 from Camo_Worm import *
@@ -15,7 +16,9 @@ def draw_worms(this_clew, title, show="yes", save="no"):
     drawing = Drawing(image)
     drawing.add_title(f'Iteration {title}')
     drawing.add_worms(this_clew)
-    if save == "yes": drawing.save(f'src/img_results/output_{title}.png')
+    if save == "yes": 
+        date_string = datetime.now().strftime("%m%d%Y-%H%M") # current date and time
+        drawing.save(f'src/img_results/output_{title}_{date_string}.png')
     if show == "yes": drawing.show()
 
 
@@ -141,6 +144,7 @@ def evolutionary_algorithm(iterations: int):
 
 
     for i in tqdm(range(iterations)):
+    # for i in range(iterations):
 
         
 
@@ -181,7 +185,9 @@ def evolutionary_algorithm(iterations: int):
 
     costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
     print(sum(costs))
-    draw_worms(this_clew, title="final")
+    draw_worms(this_clew, title="final", save="yes")
 
+    for i, worm in enumerate(this_clew):
+        print(i, ":::", worm.centre_point())
 
 evolutionary_algorithm(iterations=1000)
