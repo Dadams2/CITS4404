@@ -1,10 +1,19 @@
+import math
 import numpy as np
 from Camo_Worm import Camo_Worm
 
 
+def boundx(x, imshape):
+    # print(x)
+    # print(imshape)
+    return int(max(0, min(imshape[1]-1, x)))
+
+def boundy(y, imshape):
+    return int(max(0, min(imshape[0]-1, y)))
+
 def costfn(
     clew: list[Camo_Worm], worm_idx: int, 
-    imshape: tuple, image, 
+    imshape: tuple, image, smoothed_image, smoothed_shape: tuple, 
     w_internal: float=0.3, w_dist: float=1.0, w_env=2.0):
 
 
@@ -50,24 +59,53 @@ def costfn(
         # if (pt[0] not in range(0, imshape[1])) or (pt[1] not in range(0, imshape[0])):
         #     continue
         # clamp values
-        x = int(max(0, min(imshape[1]-1, pt[0])))
-        y = int(max(0, min(imshape[0]-1, pt[1])))
+        x = boundx(pt[0], imshape) 
+        y = boundx(pt[1], imshape) 
         # get a window of intensity in region to work out mean intensity
-        x0 = max(x - filter_width, 0)
+        x0 = max(min(x - filter_width, imshape[1]-1), 0)
         x1 = min(x + filter_width, imshape[1]-1)
-        y0 = max(y - filter_width, 0)
+        y0 = max(min(y - filter_width, imshape[0]-1), 0)
         y1 = min(y + filter_width, imshape[0]-1)
         
         pt_intensity = abs((image[y0:y1, x0:x1]-worm_intensity).mean())
+        # if math.isnan(pt_intensity):
+        #     from IPython import embed 
+        #     embed()
         # print(pt_intensity)
         intensity_scores.append(pt_intensity) #  abs((pt_intensity - worm_intensity) / 255)
     # intensity score between 0  and 1
     mean_intensity = np.mean(intensity_scores)
     # print(median_intensity)
     # print(worm_intensity)
-    intensity_score = 3 * ((mean_intensity) / 255)
+    intensity_score =  ((mean_intensity) / 255)
 
-    environment_score = intensity_score
+    # check against smoothed image
+    p0x = boundx(worm.p0[0], smoothed_shape)
+    p0y = boundy(worm.p0[1], smoothed_shape)
+
+    p1x = boundx(worm.p1[0], smoothed_shape)
+    p1y = boundy(worm.p1[1], smoothed_shape)
+
+    p2x = boundx(worm.p2[0], smoothed_shape)
+    p2y = boundy(worm.p2[1], smoothed_shape)
+
+    # from IPython import embed 
+    # embed()
+
+    val0 = smoothed_image[p0y][p0x]
+    val1 = smoothed_image[p1y][p1x]
+    val2 = smoothed_image[p2y][p2x]
+
+    segment_score = 0
+    if val0 != val1:
+        segment_score += 0.3
+    if val0 != val2:
+        segment_score += 0.3
+    if val1 != val2:
+        segment_score += 0.3
+
+    environment_score = 0.4 * intensity_score + 0.6 * segment_score
+    # environment_score = intensity_score 
     # print(environment_score)
 
     # --------------------

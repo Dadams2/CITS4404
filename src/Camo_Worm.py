@@ -18,10 +18,10 @@ class Camo_Worm:
         self.dgamma = deviation_gamma
         self.width = width
         self.colour = colour
-        p0 = [self.x - self.r * np.cos(self.theta), self.y - self.r * np.sin(self.theta)]
-        p2 = [self.x + self.r * np.cos(self.theta), self.y + self.r * np.sin(self.theta)]
-        p1 = [self.x + self.dr * np.cos(self.theta+self.dgamma), self.y + self.dr * np.sin(self.theta+self.dgamma)]
-        self.bezier = mbezier.BezierSegment(np.array([p0, p1,p2]))
+        self.p0 = [self.x - self.r * np.cos(self.theta), self.y - self.r * np.sin(self.theta)]
+        self.p2 = [self.x + self.r * np.cos(self.theta), self.y + self.r * np.sin(self.theta)]
+        self.p1 = [self.x + self.dr * np.cos(self.theta+self.dgamma), self.y + self.dr * np.sin(self.theta+self.dgamma)]
+        self.bezier = mbezier.BezierSegment(np.array([self.p0, self.p1,self.p2]))
 
     def control_points (self):
         return self.bezier.control_points

@@ -4,12 +4,14 @@ from datetime import datetime
 from tqdm import tqdm
 
 from Camo_Worm import *
-from Drawing import Drawing, prep_image
+from Drawing import Drawing, prep_image, get_smoothed
 from cost_function import costfn
 
 
 image = prep_image()
+smoothed_image = get_smoothed(image)
 img_shape = image.shape
+smoothed_shape = smoothed_image.shape
 
 
 def draw_worms(this_clew, title, clew_size=None, iterations=None, show="yes", save="no"):
@@ -141,15 +143,14 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
     return new_children
 
 
-def evolutionary_algorithm(iterations: int):
+def evolutionary_algorithm(iterations: int, clew_size: int):
 
     selection_VALUE = 0.30          # Constant - will select selection_VALUE - elite of the best worms in a clew
-    clew_SIZE = 1000                 # Constant - Size of Clew
     elite = 0.1                     # keep top 10% of each generation w/o modification (elitism concept)
     init_params = (40, 30, 1)
 
-    this_clew : list[Camo_Worm] = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
-    draw_worms(this_clew, title="Random Initialisation")
+    this_clew : list[Camo_Worm] = initialise_random_clew(clew_size, image.shape, init_params=init_params)
+    draw_worms(this_clew, title="initial")
 
 
     # for i in tqdm(range(iterations)):
@@ -160,7 +161,7 @@ def evolutionary_algorithm(iterations: int):
         ###############################################
         # Evaluation and Cost Functions
 
-        costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+        costs = [costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape) for i, _worm in enumerate(this_clew)]
         print(sum(costs))
 
 
@@ -181,10 +182,10 @@ def evolutionary_algorithm(iterations: int):
         child_clew = new_child_clew(best_clew, init_params)
 
         for index, child in enumerate(child_clew):
-            sorted_clew.append((child, costfn(child_clew, index, img_shape, image)))
+            sorted_clew.append((child, costfn(child_clew, index, img_shape, image, smoothed_image, smoothed_shape)))
         sorted_clew = sorted(sorted_clew, key=lambda x: x[1])
 
-        this_clew = [worm for worm, _cost in sorted_clew[:clew_SIZE]]
+        this_clew = [worm for worm, _cost in sorted_clew[:clew_size]]
 
 
         ###############################################
@@ -192,12 +193,11 @@ def evolutionary_algorithm(iterations: int):
 
         # draw_worms(this_clew, title=i, show="no", save="yes")
 
-    costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+    costs = [costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape) for i, _worm in enumerate(this_clew)]
     print(sum(costs))
-    draw_worms(this_clew, title="Final", clew_size=clew_SIZE, iterations=iterations, save="yes")
+    draw_worms(this_clew, title=f"final-{iterations}iter-{clew_size}clew-", save="yes")
 
     for i, worm in enumerate(this_clew):
         print(i, ":::", worm.centre_point())
 
-
-evolutionary_algorithm(iterations=200)
+evolutionary_algorithm(iterations=200, clew_size=200)

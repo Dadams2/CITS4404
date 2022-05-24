@@ -6,6 +6,8 @@ import matplotlib.patches as mpatches
 
 from Camo_Worm import Camo_Worm
 
+from skimage.segmentation import chan_vese
+import scipy.ndimage as ndimage 
 
 # Global variables
 
@@ -31,6 +33,11 @@ def prep_image():
     plt.show()
     return image
 
+
+def get_smoothed(original_image):
+    image = ndimage.gaussian_filter(original_image, sigma=(1, 16), order=0)
+    chanvese_imgage = chan_vese(image, max_iter=100, extended_output=True)
+    return np.round(chanvese_imgage[1], decimals=2)
 
 
 class Drawing:
