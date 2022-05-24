@@ -75,6 +75,6 @@ def costfn(
     # print(f"Internal: {internal_score} - Distance: {distance_score * w_dist}")
     final_score = internal_score * w_internal + distance_score * w_dist + environment_score * w_env
     # print(final_score)
-    return final_score
+    return final_score, internal_score * w_internal, distance_score * w_dist, environment_score * w_env
 
 

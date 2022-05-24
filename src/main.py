@@ -31,15 +31,32 @@ def draw_worms(this_clew, title, clew_size=None, iterations=None, show="yes", sa
 
 def plot_costfn(costs, internal, group, external, datetimestr, show=True, save=True):
     xaxis = range(len(costs))
-    fig = plt.figure(figsize=(2, 3))
+    fig = plt.figure(figsize=(16, 7))
     grid = plt.GridSpec(2, 3, wspace=0.4, hspace=0.3)
     main_ax = fig.add_subplot(grid[0, 0:3])
     main_ax.plot(xaxis,costs)
-    main_ax.title('Population Cost Over Generations')
-    main_ax.xlabel('Generation')
-    main_ax.ylabel('Cost')
+    main_ax.set_title('Population Cost Over Generations')
+    main_ax.set_xlabel('Generation')
+    main_ax.set_ylabel('Cost')
 
     internal_ax = fig.add_subplot(grid[1, 0])
+    internal_ax.plot(internal)
+    internal_ax.set_title('Internal Cost')
+    internal_ax.set_xlabel('Generation')
+    internal_ax.set_ylabel('Cost')
+
+    internal_ax = fig.add_subplot(grid[1, 1])
+    internal_ax.plot(group)
+    internal_ax.set_title('Group Cost')
+    internal_ax.set_xlabel('Generation')
+    internal_ax.set_ylabel('Cost')
+
+    internal_ax = fig.add_subplot(grid[1, 2])
+    internal_ax.plot(external)
+    internal_ax.set_title('Environment Cost')
+    internal_ax.set_xlabel('Generation')
+    internal_ax.set_ylabel('Cost')
+
 
     
     if save: 
@@ -179,6 +196,9 @@ def evolutionary_algorithm(iterations: int):
     #f = open(f'src/img_results/{date_string}.csv', 'w+', encoding='UTF8')
     #writer = csv.writer(f)
     iteration_costs = []
+    int_costs = []
+    grp_costs = []
+    env_costs = []
 
     # for i in tqdm(range(iterations)):
     for i in range(iterations):
@@ -188,9 +208,24 @@ def evolutionary_algorithm(iterations: int):
         ###############################################
         # Evaluation and Cost Functions
 
-        costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+        # costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+        costs = []
+        int_s = []
+        grp_s = []
+        env_s = []
+        for i, _worm in enumerate(this_clew):
+            vals = costfn(this_clew, i, img_shape, image)
+            costs.append(vals[0])
+            int_s.append(vals[1])
+            grp_s.append(vals[2])
+            env_s.append(vals[3])
+            
+            
         print(sum(costs))
         iteration_costs.append(sum(costs))
+        int_costs.append(sum(int_s))
+        grp_costs.append(sum(grp_s))
+        env_costs.append(sum(env_s))
 
 
         ###############################################
@@ -210,7 +245,7 @@ def evolutionary_algorithm(iterations: int):
         child_clew = new_child_clew(best_clew, init_params)
 
         for index, child in enumerate(child_clew):
-            sorted_clew.append((child, costfn(child_clew, index, img_shape, image)))
+            sorted_clew.append((child, costfn(child_clew, index, img_shape, image)[0]))
         sorted_clew = sorted(sorted_clew, key=lambda x: x[1])
 
         this_clew = [worm for worm, _cost in sorted_clew[:clew_SIZE]]
@@ -221,11 +256,26 @@ def evolutionary_algorithm(iterations: int):
 
         # draw_worms(this_clew, title=i, show="no", save="yes")
 
-    costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+    # costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+    costs = []
+    int_s = []
+    grp_s = []
+    env_s = []
+    for i, _worm in enumerate(this_clew):
+        vals = costfn(this_clew, i, img_shape, image)
+        costs.append(vals[0])
+        int_s.append(vals[1])
+        grp_s.append(vals[2])
+        env_s.append(vals[3])
+
     print(sum(costs))
     iteration_costs.append(sum(costs))
+    int_costs.append(sum(int_s))
+    grp_costs.append(sum(grp_s))
+    env_costs.append(sum(env_s))
+
     datetimestr = draw_worms(this_clew, title="Final", clew_size=clew_SIZE, iterations=iterations, save="yes")
-    plot_costfn(iteration_costs, datetimestr, show=True, save=True)
+    plot_costfn(iteration_costs, int_costs, grp_costs, env_costs, datetimestr, show=True, save=True)
 
     # f.close()
 
