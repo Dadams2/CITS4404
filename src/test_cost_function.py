@@ -3,7 +3,7 @@ import numpy as np
 from Camo_Worm import Camo_Worm
 
 
-def internal_cost_score(clew_size: int, worm: Camo_Worm, img_shape):
+def internal_cost_score(worm: Camo_Worm, img_shape):
     # --------------------
     # Internal Score
     # essentially, we divided by the maximum possible value allowed

@@ -18,7 +18,7 @@ def costfn(
     # i.e. dr which is the radius of deviation cannot be greater than the length of the worm itself
     # and we double that because we really don't like it (not sure if that's a good idea)
     length = 2 * worm.r
-    length_score = length / max(img_shape)
+    length_score = length / max(imshape)
 
     theta_score = worm.theta / (np.pi/2)
     dr_score = 2 * abs(worm.dr / (length))
