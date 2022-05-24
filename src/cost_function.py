@@ -42,7 +42,7 @@ def costfn(
 
     # Check intensity of pixels at control points of the worm
     worm_length = 2*worm.r
-    filter_width = int(worm.width)
+    filter_width = max(int(worm.width), 1)
     exam_pts = worm.intermediate_points(max(2,int(worm_length/5)))
     worm_intensity = worm.colour * 255
     intensity_scores = []
