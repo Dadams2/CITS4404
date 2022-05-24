@@ -14,7 +14,7 @@ def boundy(y, imshape):
 def costfn(
     clew: list[Camo_Worm], worm_idx: int, 
     imshape: tuple, image, smoothed_image, smoothed_shape: tuple, 
-    w_internal: float=0.7, w_dist: float=10.0, w_env=8.0):
+    w_internal: float=0.8, w_dist: float=1.5, w_env=3.0):
 
 
     worm = clew[worm_idx]
@@ -27,7 +27,7 @@ def costfn(
     # i.e. dr which is the radius of deviation cannot be greater than the length of the worm itself
     # and we double that because we really don't like it (not sure if that's a good idea)
     length = 2 * worm.r
-    length_score = max(imshape) / length
+    length_score = length / max(imshape) 
 
     theta_score = worm.theta 
     dr_score = 2 * abs(worm.dr / (length))
@@ -104,7 +104,7 @@ def costfn(
     if val1 != val2:
         segment_score += 0.3
 
-    environment_score = 0.7 * intensity_score + 2 * segment_score
+    environment_score = 0.7 * intensity_score + 0.3 * segment_score
     # environment_score = intensity_score 
     # print(environment_score)
 
@@ -113,6 +113,6 @@ def costfn(
     # print(f"Internal: {internal_score} - Distance: {distance_score * w_dist}")
     final_score = internal_score * w_internal + distance_score * w_dist + environment_score * w_env
     # print(final_score)
-    return final_score
+    return final_score, internal_score * w_internal, distance_score * w_dist, environment_score * w_env
 
 

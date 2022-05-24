@@ -6,6 +6,7 @@ from tqdm import tqdm
 from Camo_Worm import *
 from Drawing import Drawing, prep_image, get_smoothed
 from cost_function import costfn
+import matplotlib.pyplot as plt
 
 
 image = prep_image()
@@ -16,20 +17,58 @@ smoothed_shape = smoothed_image.shape
 
 def draw_worms(this_clew, title, clew_size=None, iterations=None, show="yes", save="no"):
     drawing = Drawing(image)
+    date_string = datetime.now().strftime("%m%d%Y-%H%M") # current date and time
     if clew_size is None or iterations is None:
         drawing.add_title(f"{title}")
     else:
         drawing.add_title(f"{title} - Clew Size: {clew_size} - Iterations: {iterations}")
     drawing.add_worms(this_clew)
     if save == "yes": 
-        date_string = datetime.now().strftime("%m%d%Y-%H%M") # current date and time
+
         drawing.save(f'src/img_results/output_{date_string}_{title}_.png')
     if show == "yes": drawing.show()
-    return drawing.image
+    return drawing.image, date_string
 
 def image_difference(goal, final):
     diff = goal - final
     return abs(sum(sum(diff)))
+
+def plot_costfn(costs, internal, group, external, datetimestr, show=True, save=True):
+    xaxis = range(len(costs))
+    fig = plt.figure(figsize=(16, 7))
+    grid = plt.GridSpec(2, 3, wspace=0.4, hspace=0.3)
+    main_ax = fig.add_subplot(grid[0, 0:3])
+    main_ax.plot(xaxis,costs)
+    main_ax.set_title('Population Cost Over Generations')
+    main_ax.set_xlabel('Generation')
+    main_ax.set_ylabel('Cost')
+
+    internal_ax = fig.add_subplot(grid[1, 0])
+    internal_ax.plot(internal)
+    internal_ax.set_title('Internal Cost')
+    internal_ax.set_xlabel('Generation')
+    internal_ax.set_ylabel('Cost')
+
+    internal_ax = fig.add_subplot(grid[1, 1])
+    internal_ax.plot(group)
+    internal_ax.set_title('Group Cost')
+    internal_ax.set_xlabel('Generation')
+    internal_ax.set_ylabel('Cost')
+
+    internal_ax = fig.add_subplot(grid[1, 2])
+    internal_ax.plot(external)
+    internal_ax.set_title('Environment Cost')
+    internal_ax.set_xlabel('Generation')
+    internal_ax.set_ylabel('Cost')
+
+
+    
+    if save: 
+        _path = f'src/img_results/{datetimestr}.png'
+        fig.savefig(_path)
+    if show: plt.show()
+
+
 
 def mutation(param, imshape, init_params) -> float:
     """
@@ -83,13 +122,16 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
         parent_pair = random.sample(best_clew, k=2)  # Completely Random Parents
         # parent_pair = [best_clew[index], best_clew[index+1]]  # Iterating through all worms in best_clew
 
+        # [x mutator, y mutator, colour mutator]
+        param_mutators = [img_shape[1]/16, img_shape[0]/16, 1/15]
+
 
         selection = int(random.random())
-        for param in internal_PARAMS:
+        for i, param in enumerate(internal_PARAMS):
             param1 = parent_pair[selection].__getattribute__(param)
             param2 = parent_pair[1-selection].__getattribute__(param)
-            child1_params[param] = param1 * (random.random() * 1) + 0.6
-            child2_params[param] = param2 * (random.random() * 1) + 0.6
+            child1_params[param] = param1 + (random.uniform(-1.00, 1.00) * param_mutators[i])
+            child2_params[param] = param2 + (random.uniform(-1.00, 1.00) * param_mutators[i])
             if param == 'x' or param == 'y':
                 if random.random() < 0.01:
                     child1_params[param] *= mutation(param, img_shape, init_params)
@@ -125,26 +167,26 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
         # Making Children
 
         new_worm1 = Camo_Worm(
-                x= min(child1_params["x"], img_shape[1]),
-                y= min(child1_params["y"], img_shape[0]), 
+                x= max(0, min(child1_params["x"], img_shape[1])),
+                y= max(0, min(child1_params["y"], img_shape[0])), 
                 r= child1_params["r"], 
                 theta= child1_params["theta"], 
                 deviation_r= child1_params["dr"], 
                 deviation_gamma= min(child1_params["dgamma"], np.pi), 
                 width= child1_params["width"],
-                colour= min(child1_params["colour"], 1.0)
+                colour= max(0,min(child1_params["colour"], 1.0))
                 )
         new_children.append(new_worm1)
 
         new_worm2 = Camo_Worm(
-            x= min(child2_params["x"], img_shape[1]),
-            y= min(child2_params["y"], img_shape[0]), 
+            x= max(0,min(child2_params["x"], img_shape[1])),
+            y= max(0,min(child2_params["y"], img_shape[0])), 
             r= child2_params["r"], 
             theta= child2_params["theta"], 
             deviation_r= child2_params["dr"], 
             deviation_gamma= min(child2_params["dgamma"], np.pi), 
             width= child2_params["width"],
-            colour= min(child2_params["colour"], 1.0)
+            colour= max(0,min(child2_params["colour"], 1.0))
             )
         new_children.append(new_worm2)
 
@@ -160,6 +202,11 @@ def evolutionary_algorithm(iterations: int, clew_size: int):
     this_clew : list[Camo_Worm] = initialise_random_clew(clew_size, image.shape, init_params=init_params)
     draw_worms(this_clew, title="initial")
 
+    iteration_costs = []
+    int_costs = []
+    grp_costs = []
+    env_costs = []
+
 
     # for i in tqdm(range(iterations)):
     for i in range(iterations):
@@ -169,9 +216,22 @@ def evolutionary_algorithm(iterations: int, clew_size: int):
         ###############################################
         # Evaluation and Cost Functions
 
-        costs = [costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape) for i, _worm in enumerate(this_clew)]
+        # costs = [costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape) for i, _worm in enumerate(this_clew)]
+        costs = []
+        int_s = []
+        grp_s = []
+        env_s = []
+        for i, _worm in enumerate(this_clew):
+            vals = costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape)
+            costs.append(vals[0])
+            int_s.append(vals[1])
+            grp_s.append(vals[2])
+            env_s.append(vals[3])
         print(sum(costs))
-
+        iteration_costs.append(sum(costs))
+        int_costs.append(sum(int_s))
+        grp_costs.append(sum(grp_s))
+        env_costs.append(sum(env_s))
 
         ###############################################
         # Selection (picking best parents/worms)
@@ -190,7 +250,7 @@ def evolutionary_algorithm(iterations: int, clew_size: int):
         child_clew = new_child_clew(best_clew, init_params)
 
         for index, child in enumerate(child_clew):
-            sorted_clew.append((child, costfn(child_clew, index, img_shape, image, smoothed_image, smoothed_shape)))
+            sorted_clew.append((child, costfn(child_clew, index, img_shape, image, smoothed_image, smoothed_shape)[0]))
         sorted_clew = sorted(sorted_clew, key=lambda x: x[1])
 
         this_clew = [worm for worm, _cost in sorted_clew[:clew_size]]
@@ -201,13 +261,29 @@ def evolutionary_algorithm(iterations: int, clew_size: int):
 
         # draw_worms(this_clew, title=i, show="no", save="yes")
 
-    costs = [costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape) for i, _worm in enumerate(this_clew)]
-    print(sum(costs))
-    final_image = draw_worms(this_clew, title=f"final-{iterations}iter-{clew_size}clew-", save="yes")
+    # costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
+    costs = []
+    int_s = []
+    grp_s = []
+    env_s = []
+    for i, _worm in enumerate(this_clew):
+        vals = costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape)
+        costs.append(vals[0])
+        int_s.append(vals[1])
+        grp_s.append(vals[2])
+        env_s.append(vals[3])
 
+    print(sum(costs))
+    iteration_costs.append(sum(costs))
+    int_costs.append(sum(int_s))
+    grp_costs.append(sum(grp_s))
+    env_costs.append(sum(env_s))
+
+    final_image, _date = draw_worms(this_clew, title=f"final-{iterations}iter-{clew_size}clew-", save="yes")
+    plot_costfn(iteration_costs, int_costs, grp_costs, env_costs, _date, show=True, save=True)
     for i, worm in enumerate(this_clew):
         print(i, ":::", worm.centre_point())
 
-    print(f"IMage difference {image_difference(smoothed_image, final_image)}")
+    print(f"Image difference {image_difference(smoothed_image, final_image)}")
 
-evolutionary_algorithm(iterations=100, clew_size=50)
+evolutionary_algorithm(iterations=300, clew_size=100)
