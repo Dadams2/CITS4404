@@ -62,10 +62,10 @@ def costfn(
         x = boundx(pt[0], imshape) 
         y = boundx(pt[1], imshape) 
         # get a window of intensity in region to work out mean intensity
-        x0 = max(min(x - filter_width, imshape[1]-1), 0)
-        x1 = min(x + filter_width, imshape[1]-1)
-        y0 = max(min(y - filter_width, imshape[0]-1), 0)
-        y1 = min(y + filter_width, imshape[0]-1)
+        x0 = max(min(x - filter_width, imshape[1]-2), 0)
+        x1 = min(max(x + filter_width, 1), imshape[1]-1)
+        y0 = max(min(y - filter_width, imshape[0]-2), 0)
+        y1 = min(max(y + filter_width, 1), imshape[0]-1)
         
         pt_intensity = abs((image[y0:y1, x0:x1]-worm_intensity).mean())
         # if math.isnan(pt_intensity):
