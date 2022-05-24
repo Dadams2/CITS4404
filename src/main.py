@@ -132,7 +132,7 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
 def evolutionary_algorithm(iterations: int):
 
     selection_VALUE = 0.30          # Constant - will select selection_VALUE - elite of the best worms in a clew
-    clew_SIZE = 30                 # Constant - Size of Clew
+    clew_SIZE = 100              # Constant - Size of Clew
     elite = 0.1                     # keep top 10% of each generation w/o modification (elitism concept)
     init_params = (40, 30, 1)
 

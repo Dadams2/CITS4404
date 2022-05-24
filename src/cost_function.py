@@ -18,7 +18,7 @@ def costfn(
     # i.e. dr which is the radius of deviation cannot be greater than the length of the worm itself
     # and we double that because we really don't like it (not sure if that's a good idea)
     length = 2 * worm.r
-    length_score = length / max(img_shape)
+    length_score = length / max(imshape)
 
     theta_score = worm.theta / (np.pi/2)
     dr_score = 2 * abs(worm.dr / (length))
@@ -42,7 +42,7 @@ def costfn(
 
     # Check intensity of pixels at control points of the worm
     worm_length = 2*worm.r
-    exam_pts = worm.intermediate_points(int(worm_length/5))
+    exam_pts = worm.intermediate_points(max(2,int(worm_length/5)))
     worm_intensity = worm.colour * 255
     intensity_scores = []
     for pt in exam_pts:
