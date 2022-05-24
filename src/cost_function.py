@@ -42,6 +42,7 @@ def costfn(
 
     # Check intensity of pixels at control points of the worm
     worm_length = 2*worm.r
+    filter_width = int(worm.width)
     exam_pts = worm.intermediate_points(max(2,int(worm_length/5)))
     worm_intensity = worm.colour * 255
     intensity_scores = []
@@ -52,18 +53,19 @@ def costfn(
         x = int(max(0, min(imshape[1]-1, pt[0])))
         y = int(max(0, min(imshape[0]-1, pt[1])))
         # get a window of intensity in region to work out mean intensity
-        x0 = max(x - 1, 0)
-        x1 = min(x + 1, imshape[1]-1)
-        y0 = max(y - 1, 0)
-        y1 = min(y + 1, imshape[0]-1)
+        x0 = max(x - filter_width, 0)
+        x1 = min(x + filter_width, imshape[1]-1)
+        y0 = max(y - filter_width, 0)
+        y1 = min(y + filter_width, imshape[0]-1)
         
-        pt_intensity = image[y0:y1, x0:x1].mean()
+        pt_intensity = abs((image[y0:y1, x0:x1]-worm_intensity).mean())
+        # print(pt_intensity)
         intensity_scores.append(pt_intensity) #  abs((pt_intensity - worm_intensity) / 255)
     # intensity score between 0  and 1
     mean_intensity = np.mean(intensity_scores)
     # print(median_intensity)
     # print(worm_intensity)
-    intensity_score = 2 * abs((mean_intensity - worm_intensity) / 255)
+    intensity_score = 3 * ((mean_intensity) / 255)
 
     environment_score = intensity_score
     # print(environment_score)
