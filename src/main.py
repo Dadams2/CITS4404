@@ -78,8 +78,8 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
 
         selection = int(random.random())
         for param in internal_PARAMS:
-            child1_params[param] = parent_pair[selection].__getattribute__(param)
-            child2_params[param] = parent_pair[1-selection].__getattribute__(param)
+            child1_params[param] = parent_pair[selection].__getattribute__(param) * (random.random() * 1) + 0.5
+            child2_params[param] = parent_pair[1-selection].__getattribute__(param) * (random.random() * 1) + 0.5
 
         
         for param in other_PARAMS:
@@ -87,18 +87,24 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
             child1_params[param] = parent_pair[selection].__getattribute__(param)
             child2_params[param] = parent_pair[1-selection].__getattribute__(param)
 
-
-        ###############################################
-        # Mutation - (Hadi): just trying to get more mutations happening
-
-        for param in all_PARAMS:
             if random.random() < 0.01:
-                # child1_params[param] *= ((random.random() * 0.6) + 0.7)  # mutate between 90 - 110% of good worms attr value 
-               child1_params[param] = mutation(param, img_shape, init_params) # child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+               child1_params[param] = mutation(param, img_shape, init_params)
 
             if random.random() < 0.01:
-                # child2_params[param] *= ((random.random() * 0.6) + 0.7)  # mutate between 90 - 110% of good worms attr value 
-                child2_params[param] = mutation(param, img_shape, init_params) # child2_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+               child2_params[param] = mutation(param, img_shape, init_params)
+
+
+        # ###############################################
+        # # Mutation - (Hadi): just trying to get more mutations happening
+
+        # for param in all_PARAMS:
+        #     if random.random() < 0.01:
+        #         # child1_params[param] *= ((random.random() * 0.6) + 0.7)  # mutate between 90 - 110% of good worms attr value 
+        #        child1_params[param] = mutation(param, img_shape, init_params) # child1_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
+
+        #     if random.random() < 0.01:
+        #         # child2_params[param] *= ((random.random() * 0.6) + 0.7)  # mutate between 90 - 110% of good worms attr value 
+        #         child2_params[param] = mutation(param, img_shape, init_params) # child2_params[param] * ((random.random() / 5) + 0.90)  # mutate between 90 - 110% of good worms attr value 
 
 
 
@@ -135,16 +141,16 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
 def evolutionary_algorithm(iterations: int):
 
     selection_VALUE = 0.30          # Constant - will select selection_VALUE - elite of the best worms in a clew
-    clew_SIZE = 100              # Constant - Size of Clew
+    clew_SIZE = 1000                 # Constant - Size of Clew
     elite = 0.1                     # keep top 10% of each generation w/o modification (elitism concept)
     init_params = (40, 30, 1)
 
-    this_clew = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
+    this_clew : list[Camo_Worm] = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
     draw_worms(this_clew, title="initial")
 
 
-    for i in tqdm(range(iterations)):
-    # for i in range(iterations):
+    # for i in tqdm(range(iterations)):
+    for i in range(iterations):
 
         
 
@@ -185,9 +191,9 @@ def evolutionary_algorithm(iterations: int):
 
     costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
     print(sum(costs))
-    draw_worms(this_clew, title="final", save="yes")
+    draw_worms(this_clew, title=f"final-{iterations}iter-{clew_SIZE}clew-", save="yes")
 
     for i, worm in enumerate(this_clew):
         print(i, ":::", worm.centre_point())
 
-evolutionary_algorithm(iterations=1000)
+evolutionary_algorithm(iterations=200)
