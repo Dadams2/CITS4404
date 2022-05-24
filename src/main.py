@@ -25,8 +25,11 @@ def draw_worms(this_clew, title, clew_size=None, iterations=None, show="yes", sa
         date_string = datetime.now().strftime("%m%d%Y-%H%M") # current date and time
         drawing.save(f'src/img_results/output_{date_string}_{title}_.png')
     if show == "yes": drawing.show()
+    return drawing.image
 
-
+def image_difference(goal, final):
+    diff = goal - final
+    return abs(sum(sum(diff)))
 
 def mutation(param, imshape, init_params) -> float:
     """
@@ -195,9 +198,11 @@ def evolutionary_algorithm(iterations: int, clew_size: int):
 
     costs = [costfn(this_clew, i, img_shape, image, smoothed_image, smoothed_shape) for i, _worm in enumerate(this_clew)]
     print(sum(costs))
-    draw_worms(this_clew, title=f"final-{iterations}iter-{clew_size}clew-", save="yes")
+    final_image = draw_worms(this_clew, title=f"final-{iterations}iter-{clew_size}clew-", save="yes")
 
     for i, worm in enumerate(this_clew):
         print(i, ":::", worm.centre_point())
 
-evolutionary_algorithm(iterations=200, clew_size=200)
+    print(f"IMage difference {image_difference(smoothed_image, final_image)}")
+
+evolutionary_algorithm(iterations=20, clew_size=20)
