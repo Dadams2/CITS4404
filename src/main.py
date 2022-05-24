@@ -1,11 +1,13 @@
 import numpy as np
 import random
-from datetime import datetime
+from datetime import date, datetime
 from tqdm import tqdm
 
 from Camo_Worm import *
 from Drawing import Drawing, prep_image
 from cost_function import costfn
+import csv
+import matplotlib.pyplot as plt
 
 
 image = prep_image()
@@ -14,15 +16,37 @@ img_shape = image.shape
 
 def draw_worms(this_clew, title, clew_size=None, iterations=None, show="yes", save="no"):
     drawing = Drawing(image)
+    date_string = datetime.now().strftime("%m%d%Y-%H%M") # current date and time
     if clew_size is None or iterations is None:
         drawing.add_title(f"{title}")
     else:
         drawing.add_title(f"{title} - Clew Size: {clew_size} - Iterations: {iterations}")
     drawing.add_worms(this_clew)
     if save == "yes": 
-        date_string = datetime.now().strftime("%m%d%Y-%H%M") # current date and time
+        
         drawing.save(f'src/img_results/output_{date_string}_{title}_.png')
     if show == "yes": drawing.show()
+    return date_string
+
+
+def plot_costfn(costs, internal, group, external, datetimestr, show=True, save=True):
+    xaxis = range(len(costs))
+    fig = plt.figure(figsize=(2, 3))
+    grid = plt.GridSpec(2, 3, wspace=0.4, hspace=0.3)
+    main_ax = fig.add_subplot(grid[0, 0:3])
+    main_ax.plot(xaxis,costs)
+    main_ax.title('Population Cost Over Generations')
+    main_ax.xlabel('Generation')
+    main_ax.ylabel('Cost')
+
+    internal_ax = fig.add_subplot(grid[1, 0])
+
+    
+    if save: 
+        _path = f'src/img_results/{datetimestr}.png'
+        fig.savefig(_path)
+    if show: plt.show()
+
 
 
 
@@ -144,13 +168,17 @@ def new_child_clew(best_clew: list[Camo_Worm], init_params):
 def evolutionary_algorithm(iterations: int):
 
     selection_VALUE = 0.30          # Constant - will select selection_VALUE - elite of the best worms in a clew
-    clew_SIZE = 1000                 # Constant - Size of Clew
+    clew_SIZE = 100                 # Constant - Size of Clew
     elite = 0.1                     # keep top 10% of each generation w/o modification (elitism concept)
     init_params = (40, 30, 1)
 
     this_clew : list[Camo_Worm] = initialise_random_clew(clew_SIZE, image.shape, init_params=init_params)
     draw_worms(this_clew, title="Random Initialisation")
 
+    date_string = datetime.now().strftime("%m%d%Y-%H%M")
+    #f = open(f'src/img_results/{date_string}.csv', 'w+', encoding='UTF8')
+    #writer = csv.writer(f)
+    iteration_costs = []
 
     # for i in tqdm(range(iterations)):
     for i in range(iterations):
@@ -162,6 +190,7 @@ def evolutionary_algorithm(iterations: int):
 
         costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
         print(sum(costs))
+        iteration_costs.append(sum(costs))
 
 
         ###############################################
@@ -194,10 +223,14 @@ def evolutionary_algorithm(iterations: int):
 
     costs = [costfn(this_clew, i, img_shape, image) for i, _worm in enumerate(this_clew)]
     print(sum(costs))
-    draw_worms(this_clew, title="Final", clew_size=clew_SIZE, iterations=iterations, save="yes")
+    iteration_costs.append(sum(costs))
+    datetimestr = draw_worms(this_clew, title="Final", clew_size=clew_SIZE, iterations=iterations, save="yes")
+    plot_costfn(iteration_costs, datetimestr, show=True, save=True)
+
+    # f.close()
 
     for i, worm in enumerate(this_clew):
         print(i, ":::", worm.centre_point())
 
 
-evolutionary_algorithm(iterations=200)
+evolutionary_algorithm(iterations=100)
