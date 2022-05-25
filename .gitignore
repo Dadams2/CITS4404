@@ -8,3 +8,5 @@ __pycache__/
 .DS_Store
 
 my_test/
+
+src/img_results/
