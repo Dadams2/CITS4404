@@ -66,6 +66,9 @@ class Drawing:
         except TypeError:
             self.add_patches([worms.patch()])
     
+    def add_rect(self, x, y, width, height):
+        self.add_patches(mpatches.Rectangle((x, y), width, height, linewidth=1, edgecolor='r', facecolor='none'))
+
     def show(self):
         plt.show()
 
