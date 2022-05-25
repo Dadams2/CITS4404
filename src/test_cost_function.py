@@ -24,7 +24,7 @@ def internal_cost_score(worm: Camo_Worm, img_shape):
 def costfn(
     clew: list[Camo_Worm], worm_idx: int, 
     imshape: tuple, image, 
-    w_internal: float=1.0, w_dist: float=3.0, w_env=3.0):
+    w_internal: float=1.0, w_dist: float=50.0, w_env=3.0):
 
     worm = clew[worm_idx]
     

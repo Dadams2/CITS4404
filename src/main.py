@@ -286,4 +286,4 @@ def evolutionary_algorithm(iterations: int, clew_size: int):
 
     print(f"Image difference {image_difference(smoothed_image, final_image)}")
 
-evolutionary_algorithm(iterations=300, clew_size=100)
+evolutionary_algorithm(iterations=200, clew_size=200)
